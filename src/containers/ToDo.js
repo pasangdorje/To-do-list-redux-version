@@ -1,10 +1,10 @@
 import { connect } from 'react-redux';
 import AddListForm from './AddListForm';
 import React, { Component } from 'react';
-import ToDoList from '../components/ToDoList/ToDoList';
+import * as actions from '../redux/actions';
+import ToDoList from '../components/ToDoList';
 import AddToList from '../components/buttons/AddToList';
 import ResetList from '../components/buttons/ResetList';
-import * as actions from '../redux/actions';
 
 class ToDo extends Component {
   componentDidMount() {
@@ -91,7 +91,6 @@ class ToDo extends Component {
   render() {
     return (
       <div className="to-do-container">
-        <h2>To Do List</h2>
         <AddToList onClick={this.toggleForm} />
         <ResetList onClick={this.resetList} />
         <AddListForm
@@ -103,6 +102,7 @@ class ToDo extends Component {
           toDoList={this.props.toDoList}
           onActionPerformed={this.handleActions}
         />
+        <button onClick={this.props.auth.logout}>Logout</button>
       </div>
     );
   }
