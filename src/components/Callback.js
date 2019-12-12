@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
 import Auth from './Auth';
+import React, { Component } from 'react';
 
 class Callback extends Component {
   componentDidMount() {
