@@ -1,21 +1,12 @@
+import { connect } from 'react-redux';
+import AddListForm from './AddListForm';
 import React, { Component } from 'react';
+import ToDoList from '../components/ToDoList/ToDoList';
 import AddToList from '../components/buttons/AddToList';
 import ResetList from '../components/buttons/ResetList';
-import AddListForm from './AddListForm';
-import ToDoList from '../components/ToDoList/ToDoList';
-import { useSelector, useDispatch } from 'react-redux';
-import { toggleFormStatus, increaseTaskCounter } from '../redux/actions';
+import * as actions from '../redux/actions';
 
 class ToDo extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      toDoList: [],
-      formStatus: false,
-      taskCounter: 0
-    };
-  }
-
   componentDidMount() {
     this.getDataFromLocal();
   }
@@ -26,36 +17,47 @@ class ToDo extends Component {
 
   getDataFromLocal = () => {
     if ('data' in localStorage) {
-      const data = JSON.parse(localStorage.getItem('data'));
-
-      this.setState({ toDoList: data.toDoList, taskCounter: data.taskCounter });
+      this.setLocalToStore(JSON.parse(localStorage.getItem('data')));
     }
   };
 
+  setLocalToStore = data => {
+    this.props.setFormStatus(data.formStatus);
+    this.props.setTaskCounter(data.taskCounter);
+    this.props.setList(data.toDoList);
+  };
+
   setDataToLocal = () => {
-    localStorage.setItem('data', JSON.stringify(this.state));
+    localStorage.setItem('data', JSON.stringify(this.createLocalData()));
+  };
+
+  createLocalData = () => {
+    return {
+      formStatus: this.props.formStatus,
+      taskCounter: this.props.taskCounter,
+      toDoList: this.props.toDoList
+    };
   };
 
   handleFormSubmit = (e, formData) => {
     e.preventDefault();
-    const newTask = {
-      id: this.state.taskCounter + 1,
+    this.props.addToDo(this.createNewTask(formData));
+    this.props.toggleFormStatus();
+  };
+
+  createNewTask = formData => {
+    this.props.increaseTaskCounter();
+    return {
+      id: this.props.taskCounter + 1,
       task: formData.task,
       daysAssigned: formData.daysAssigned,
       issueTimeStamp: new Date().getTime(),
       isDone: false
     };
-    const newTaskList = this.state.toDoList;
-    newTaskList.push(newTask);
-    this.setState(prevState => ({
-      toDoList: newTaskList,
-      formStatus: false,
-      taskCounter: prevState.taskCounter + 1
-    }));
   };
 
   handleActions = (itemId, action) => {
-    let list = [...this.state.toDoList];
+    let list = [...this.props.toDoList];
     let matchedIndex;
     for (let i = 0; i < list.length; i++) {
       if (list[i].id === itemId) matchedIndex = i;
@@ -73,15 +75,17 @@ class ToDo extends Component {
       default:
         break;
     }
-    this.setState({ toDoList: list });
+    this.props.setList(list);
   };
 
   toggleForm = () => {
-    this.setState({ formStatus: !this.state.formStatus });
+    this.props.toggleFormStatus();
   };
 
   resetList = () => {
-    this.setState({ toDoList: [], formStatus: false, taskCounter: 0 });
+    this.props.resetTaskCounter();
+    this.props.resetFormStatus();
+    this.props.resetList();
   };
 
   render() {
@@ -91,12 +95,12 @@ class ToDo extends Component {
         <AddToList onClick={this.toggleForm} />
         <ResetList onClick={this.resetList} />
         <AddListForm
-          formStatus={this.state.formStatus}
+          formStatus={this.props.formStatus}
           onFormSubmit={this.handleFormSubmit}
           onCancel={this.toggleForm}
         />
         <ToDoList
-          toDoList={this.state.toDoList}
+          toDoList={this.props.toDoList}
           onActionPerformed={this.handleActions}
         />
       </div>
@@ -104,4 +108,26 @@ class ToDo extends Component {
   }
 }
 
-export default ToDo;
+const mapStateToProps = state => {
+  return {
+    taskCounter: state.taskCounter,
+    formStatus: state.formStatus,
+    toDoList: state.toDoList
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    increaseTaskCounter: () => dispatch(actions.increaseTaskCounter()),
+    resetTaskCounter: () => dispatch(actions.resetTaskCounter()),
+    setTaskCounter: localData => dispatch(actions.setTaskCounter(localData)),
+    toggleFormStatus: () => dispatch(actions.toggleFormStatus()),
+    resetFormStatus: () => dispatch(actions.resetFormStatus()),
+    setFormStatus: localData => dispatch(actions.setFormStatus(localData)),
+    addToDo: newTask => dispatch(actions.addToDo(newTask)),
+    resetList: () => dispatch(actions.resetList()),
+    setList: localData => dispatch(actions.setList(localData))
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ToDo);

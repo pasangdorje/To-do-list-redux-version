@@ -1,13 +1,17 @@
-export const increaseTaskCounter = () => {
-  return {
-    type: 'INCRE_TASK_COUNTER',
-    info: 'increase the value of task counter'
-  };
-};
+export * from './toDoListActions';
+export * from './formStatusActions';
+export * from './taskCounterActions';
 
-export const toggleFormStatus = () => {
-  return {
-    type: 'FORM_STATUS',
-    info: 'toggle the form status between true and false'
-  };
-};
+// export const getFromLocal = () => {
+//   return {
+//     type: 'GET_FROM_LOCAL',
+//     info: 'gets the previous data from the local storage',
+//     payload: getLocalData()
+//   };
+// };
+
+// const getLocalData = () => {
+//   if ('data' in localStorage) {
+//     return JSON.parse(localStorage.getItem('data'));
+//   }
+// };
